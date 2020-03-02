@@ -21,11 +21,6 @@ namespace MatrixTransformations
             this.w = w;
         }
 
-        public Vector Copy()
-        {
-            return new Vector(this.x, this.y, this.w);
-        }
-
         public static Vector operator +(Vector v1, Vector v2)
         {
             return new Vector(v1.x + v2.x, v1.y + v2.y, v1.w + v2.w);

@@ -21,23 +21,20 @@ namespace MatrixTransformations
             mat[1, 0] = m21; mat[1, 1] = m22; mat[1, 2] = m23;
             mat[2, 0] = m31; mat[2, 1] = m32; mat[2, 2] = m33;
         }
-        //public Matrix(float m11, float m12,
-        //              float m21, float m22)
-        //{
-        //    mat[0, 0] = m11; mat[0, 1] = m12;
-        //    mat[1, 0] = m21; mat[1, 1] = m22;
-        //}
 
         public Matrix(Vector v)
         {
             mat[0, 0] = v.x;
-            mat[1, 0] = v.y;
-            mat[2, 0] = v.w;
+            mat[1, 1] = v.y; 
+            mat[2, 2] = v.w;
         }
 
         public Vector ToVector()
         {
-            return new Vector(mat[0,0],mat[1,0], mat[2,0]);
+            return new Vector(
+                mat[0, 0] + mat[0, 1] + mat[0, 2],
+                mat[1, 0] + mat[1, 1] + mat[1, 2],
+                mat[2, 0] + mat[2, 1] + mat[2, 2]);
         }
 
         public static Matrix operator +(Matrix m1, Matrix m2)
@@ -101,14 +98,14 @@ namespace MatrixTransformations
             return new Matrix(); // Default constructor returns identity
         }
 
-        public static Matrix ScaleMatrix(float s)
+        public static Matrix Scale(float s)
         {
             Matrix m = new Matrix()*s;
             m.mat[2, 2] = 1;
             return m;
         }
 
-        public static Matrix RotateMatrix(float degrees)
+        public static Matrix Rotate(float degrees)
         {
             degrees = degrees * (float) Math.PI / 180;
             return new Matrix(
@@ -116,6 +113,14 @@ namespace MatrixTransformations
                 (float)Math.Sin(degrees),   (float)Math.Cos(degrees),   0,
                 0,                          0,                          1
             );
+        }
+
+        public static Matrix TranslateMatrix(Vector t)
+        {
+            Matrix m = Matrix.Identity();
+            m.mat[0, 2] = t.x;
+            m.mat[1, 2] = t.y;
+            return m;
         }
 
 
@@ -130,7 +135,6 @@ namespace MatrixTransformations
                     s += mat[x, y] + "\t";
                 }
                 if (x == 0) { s += "\\"; } else if (x == mat.GetLength(0) - 1) { s += "/"; } else { s += "|"; }; // Nice formatting
-
                 s += "\n";
             }
             return s; 

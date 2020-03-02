@@ -12,12 +12,12 @@ namespace MatrixTransformations
         AxisY y_axis;
 
         // Objects
-        Square square_1, square_2, square_3;
+        Square square_1, square_2, square_3, square_4;
 
-        // Transform matrices 
-        Matrix Mat_Scale = Matrix.ScaleMatrix((float)1.5);
-        int rotation = 20; 
-        Matrix Mat_Rot = Matrix.RotateMatrix(20);
+        // Transform matrices
+        Matrix Mat_Scale, Mat_Rot, Mat_Trl;
+        int rotation;
+        Vector translation;
 
         // Window dimensions
         const int WIDTH = 800;
@@ -31,27 +31,12 @@ namespace MatrixTransformations
             this.Height = HEIGHT;
             this.DoubleBuffered = true;
 
-            Vector v1 = new Vector();
-            Console.WriteLine(v1);
-            Vector v2 = new Vector(1, 2, 0);
-            Console.WriteLine(v2);
-            Vector v3 = new Vector(2, 6, 0);
-            Console.WriteLine(v3);
-            Vector v4 = v2 + v3;
-            Console.WriteLine(v4); // 3, 8
-
-            Matrix m1 = new Matrix();
-            Console.WriteLine(m1); // 1, 0, 0, 1
-            Matrix m2 = new Matrix(
-                 2,  4,  0,
-                -1,  3,  0,
-                 0,  0,  0);
-            Console.WriteLine(m2);
-            Console.WriteLine(m1 + m2); // 3, 4, -1, 4
-            Console.WriteLine(m1 - m2); // -1, -4, 1, -2
-            Console.WriteLine(m2 * m2); // 0, 20, -5, 5
-
-            Console.WriteLine(m2 * v3); // 28, 16
+            // Initialize matrices
+            this.rotation = 20;
+            this.translation = new Vector(75, -25, 1);
+            this.Mat_Scale = Matrix.Scale((float)1.5);
+            this.Mat_Rot = Matrix.Rotate(rotation);
+            this.Mat_Trl = Matrix.TranslateMatrix(translation);
 
             // Define axes
             x_axis = new AxisX(200);
@@ -61,6 +46,17 @@ namespace MatrixTransformations
             square_1 = new Square(Color.Purple,100);
             square_2 = new Square(Color.Cyan, 100);
             square_3 = new Square(Color.Orange, 100);
+            square_4 = new Square(Color.DarkBlue, 100);
+
+            // TESTS (I know...)
+            Vector v = new Vector(10, 20, 1);
+            Matrix m1 = Matrix.TranslateMatrix(new Vector(5, -30, 1));
+
+            Console.WriteLine(new Matrix(v));
+            Console.WriteLine(m1);
+            Console.WriteLine(m1 * new Matrix(v));
+
+            Console.WriteLine(m1 * v);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -74,7 +70,7 @@ namespace MatrixTransformations
             vectorBuffer.Clear();
             foreach (Vector v in square_1.vb)
             {
-                vectorBuffer.Add(v.Copy());
+                vectorBuffer.Add(v * Matrix.Identity());
             }
             ViewPortTransformation(vectorBuffer);
             square_1.Draw(e.Graphics, vectorBuffer);
@@ -90,7 +86,7 @@ namespace MatrixTransformations
             square_2.Draw(e.Graphics, vectorBuffer);
 
 
-            // Transformations for square_3 (orange)
+            // Draw square_3 (orange)
             vectorBuffer.Clear();
             foreach (Vector v in square_3.vb)
             {
@@ -100,11 +96,21 @@ namespace MatrixTransformations
             ViewPortTransformation(vectorBuffer);
             square_3.Draw(e.Graphics, vectorBuffer);
 
+            // Draw square_4 (dark blue)
+            vectorBuffer.Clear();
+            foreach (Vector v in square_4.vb)
+            {
+                vectorBuffer.Add(v * Mat_Trl);
+            }
+
+            ViewPortTransformation(vectorBuffer);
+            square_4.Draw(e.Graphics, vectorBuffer);
+
             // Draw axes
             vectorBuffer.Clear();
             foreach (Vector v in x_axis.vb)
             {
-                vectorBuffer.Add(v.Copy());
+                vectorBuffer.Add(v * Matrix.Identity());
             }
             ViewPortTransformation(vectorBuffer);
             x_axis.Draw(e.Graphics, vectorBuffer);
@@ -112,7 +118,7 @@ namespace MatrixTransformations
             vectorBuffer.Clear();
             foreach (Vector v in y_axis.vb)
             {
-                vectorBuffer.Add(v.Copy());
+                vectorBuffer.Add(v * Matrix.Identity());
             }
             ViewPortTransformation(vectorBuffer);
             y_axis.Draw(e.Graphics, vectorBuffer);
@@ -136,8 +142,7 @@ namespace MatrixTransformations
                 }
                 if (this.rotation < 0) this.rotation += 360;
                 if (this.rotation >= 360) this.rotation -= 360; // %= still allows negatives? 
-                this.Mat_Rot = Matrix.RotateMatrix(this.rotation);
-                Console.WriteLine("Current rotation: " + this.rotation + " degrees.");
+                this.Mat_Rot = Matrix.Rotate(this.rotation);
                 Invalidate();
             }
 
