@@ -5,11 +5,11 @@ namespace MatrixTransformations
 {
     public class Matrix
     {
-        float[,] mat = new float[4,4];
+        float[,] mat = new float[4, 4];
 
         public Matrix()
         { // CREATES IDENTITY MATRIX, UPDATE Identity() IF THIS CHANGES (:
-            for (int x=0; x < mat.GetLength(0); x++)
+            for (int x = 0; x < mat.GetLength(0); x++)
                 for (int y = 0; y < mat.GetLength(1); y++)
                     if (x == y) { mat[x, y] = 1; } else { mat[x, y] = 0; }
         }
@@ -79,8 +79,8 @@ namespace MatrixTransformations
                 for (int y = 0; y < m1.mat.GetLength(1); y++)
                 {
                     float n = 0;
-                    for(int z=0; z<m1.mat.GetLength(0); z++)
-                        n += m1.mat[x,z] * m2.mat[z,y];
+                    for (int z = 0; z < m1.mat.GetLength(0); z++)
+                        n += m1.mat[x, z] * m2.mat[z, y];
                     m.mat[x, y] = n;
                 }
             return m;
@@ -104,39 +104,46 @@ namespace MatrixTransformations
 
         public static Matrix Scale(float s)
         {
-            Matrix m = new Matrix()*s;
+            Matrix m = new Matrix() * s;
             m.mat[3, 3] = 1;
             return m;
         }
 
+        public static float DegToRad(float degrees)
+        {
+            return degrees * (float)Math.PI / 180;
+        }
+
         public static Matrix RotateZ(float degrees)
         {
-            degrees = degrees * (float) Math.PI / 180;
+            float rad = DegToRad(degrees);
             return new Matrix(
-                (float)Math.Cos(degrees),   (float)-Math.Sin(degrees),  0, 0,
-                (float)Math.Sin(degrees),   (float)Math.Cos(degrees),   0, 0,
-                0,                          0,                          1, 0,
-                0,                          0,                          0, 1
+                (float)Math.Cos(rad), (float)-Math.Sin(rad), 0, 0,
+                (float)Math.Sin(rad), (float)Math.Cos(rad),  0, 0,
+                0,                    0,                     1, 0,
+                0,                    0,                     0, 1
             );
         }
         public static Matrix RotateX(float degrees)
         {
-            degrees = degrees * (float)Math.PI / 180;
+            float rad = DegToRad(degrees);
             return new Matrix(
-                1, 0,                        0,                         0,
-                0, (float)Math.Cos(degrees), (float)-Math.Sin(degrees), 0,
-                0, (float)Math.Sin(degrees), (float) Math.Cos(degrees), 0,
-                0, 0,                        0,                         1
+                1, 0,                    0,                     0,
+                0, (float)Math.Cos(rad), (float)-Math.Sin(rad), 0,
+                0, (float)Math.Sin(rad), (float) Math.Cos(rad), 0,
+                0, 0,                    0,                     1
             );
         }
+
+
         public static Matrix RotateY(float degrees)
         {
-            degrees = degrees * (float)Math.PI / 180;
+            float rad = DegToRad(degrees);
             return new Matrix(
-                (float) Math.Cos(degrees), 0, (float)Math.Sin(degrees), 0,
-                0,                         1, 0,                        0,
-                (float)-Math.Sin(degrees), 0, (float)Math.Cos(degrees), 0,
-                0,                         0, 0,                        1
+                (float) Math.Cos(rad), 0, (float)Math.Sin(rad), 0,
+                0,                     1, 0,                    0,
+                (float)-Math.Sin(rad), 0, (float)Math.Cos(rad), 0,
+                0,                     0, 0,                    1
             );
         }
 
@@ -147,6 +154,18 @@ namespace MatrixTransformations
             m.mat[1, 3] = t.y;
             m.mat[2, 3] = t.z;
             return m;
+        }
+        public static Matrix InverseMatrix(float r, float theta, float phi) // r, θ, φ
+        {
+            float theta_rad = Matrix.DegToRad(theta);
+            float phi_rad = Matrix.DegToRad(phi);
+
+            return new Matrix(
+                (float)-Math.Sin(theta_rad),                      (float) Math.Cos(theta_rad),                      0,                      0,
+                (float)-Math.Cos(theta_rad) *(float)Math.Cos(phi_rad), (float)-Math.Cos(phi_rad) *(float)Math.Sin(theta_rad), (float) Math.Sin(phi_rad),  0,
+                (float) Math.Cos(theta_rad) *(float)Math.Sin(phi_rad), (float) Math.Sin(theta_rad) *(float)Math.Sin(phi_rad), (float) Math.Cos(phi_rad), -r,
+                0,0,0,1
+            );
         }
 
 

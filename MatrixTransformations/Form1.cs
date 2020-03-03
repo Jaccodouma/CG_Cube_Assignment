@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Timers;
 
 namespace MatrixTransformations
 {
@@ -10,18 +11,18 @@ namespace MatrixTransformations
         // Axes
         AxisX x_axis;
         AxisY y_axis;
+        AxisZ z_axis;
 
         // Objects
-        Square square_1, square_2, square_3, square_4;
-
-        // Transform matrices
-        Matrix Mat_Scale, Mat_Rot;
-        int rotation;
-        Vector translation;
+        Cube cube;
+        float dx, dy, dz, rx, ry, rz, scale, phase; 
 
         // Window dimensions
         const int WIDTH = 800;
         const int HEIGHT = 600;
+
+        // Timer for animations
+        private static System.Timers.Timer timer;
 
         public Form1()
         {
@@ -29,111 +30,123 @@ namespace MatrixTransformations
 
             this.Width = WIDTH;
             this.Height = HEIGHT;
+
             this.DoubleBuffered = true;
 
-            // Initialize matrices
-            this.rotation = 20;
-            this.translation = new Vector(75, -25, 1);
-            this.Mat_Scale = Matrix.Scale((float)1.5);
-            this.Mat_Rot = Matrix.RotateZ(rotation);
+            this.scale = 1; 
 
             // Define axes
-            x_axis = new AxisX(200);
-            y_axis = new AxisY(200);
+            x_axis = new AxisX(3);
+            y_axis = new AxisY(3);
+            z_axis = new AxisZ(3);
 
             // Create object
-            square_1 = new Square(Color.Purple,100);
-            square_2 = new Square(Color.Cyan, 100);
-            square_3 = new Square(Color.Orange, 100);
-            square_4 = new Square(Color.DarkBlue, 100);
-
-            // TESTS (I know...)
-            Vector v = new Vector(100, 100, 0);
-            Matrix m1 = Matrix.TranslateMatrix(new Vector(5, -30, 10));
-
-            Console.WriteLine(m1);
-            Console.WriteLine(v);
-
-            Console.WriteLine(m1 * v);
+            cube = new Cube(Color.Orange);
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
 
+            drawControls(e.Graphics);
+
             // Draw squares
-            Matrix m = Matrix.TranslateMatrix(new Vector(-100, 50, 1)) * Matrix.Scale(0.79f) * Matrix.RotateZ(45);
-            square_1.Draw(e.Graphics, ViewPortTransformation(square_1.vb, m));
-            square_2.Draw(e.Graphics, ViewPortTransformation(square_2.vb, Mat_Scale));
-            square_3.Draw(e.Graphics, ViewPortTransformation(square_3.vb, Mat_Rot));
-            square_4.Draw(e.Graphics, ViewPortTransformation(square_4.vb, Matrix.TranslateMatrix(translation)));
+            Matrix transformation = Matrix.TranslateMatrix(new Vector(dx, dy, dz)) * Matrix.RotateX(rx) * Matrix.RotateY(ry) * Matrix.RotateZ(rz) * Matrix.Scale(scale);
+            cube.Draw(e.Graphics, ViewingPipeline(cube.vb, transformation));
 
             // Draw axes
-            x_axis.Draw(e.Graphics, ViewPortTransformation(x_axis.vb, Matrix.Identity()));
-            y_axis.Draw(e.Graphics, ViewPortTransformation(y_axis.vb, Matrix.Identity()));
+            x_axis.Draw(e.Graphics, ViewingPipeline(x_axis.vb, Matrix.Identity()));
+            y_axis.Draw(e.Graphics, ViewingPipeline(y_axis.vb, Matrix.Identity()));
+            z_axis.Draw(e.Graphics, ViewingPipeline(z_axis.vb, Matrix.Identity()));
         }
 
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private void drawControls(Graphics g)
         {
-            if (e.KeyCode == Keys.Escape)
-                Application.Exit();
-
-            if (e.KeyCode == Keys.S)
-            {
-                if (e.Shift)
-                {
-                    this.rotation -= 1;
-                }
-                else
-                {
-                    this.rotation += 1;
-                }
-                if (this.rotation < 0) this.rotation += 360;
-                if (this.rotation >= 360) this.rotation -= 360;
-                this.Mat_Rot = Matrix.RotateZ(this.rotation);
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.Subtract)
-            {
-                this.Mat_Scale -= Matrix.Identity() * 0.05f;
-                Invalidate();
-            } else if (e.KeyCode == Keys.Add)
-            {
-                this.Mat_Scale += Matrix.Identity() * 0.05f;
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.Up)
-            {
-                this.translation.y++;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.Down)
-            {
-                this.translation.y--;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.Left)
-            {
-                this.translation.x--;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.Right)
-            {
-                this.translation.x++;
-                Invalidate();
-            }
+            Font font = new Font("Arial", 10);
+            PointF p = new PointF(0,0);
+            string str =
+                "Scale: \t\t" + this.scale + "\t(S/s)\n" +
+                "TranslateX: \t" + this.dx + "\t(Left/Right)\n" +
+                "TranslateY: \t" + this.dy + "\t(Up/Down)\n" +
+                "TranslateZ: \t" + this.dz + "\t(PgUp/PgDn)\n" +
+                "RotateX: \t" + this.rx + "\t(X/x)\n" +
+                "RotateY: \t" + this.ry + "\t(Y/y)\n" +
+                "RotateZ: \t" + this.rz + "\t(Z/z)\n\n" +
+                "r: \t" + this.r + "\t(R/r)\n" +
+                "d: \t" + this.d + "\t(D/d)\n" +
+                "phi: \t" + this.phi + "\t(P/p)\n" +
+                "theta: \t" + this.theta + "\t(T/t)\n" + 
+                "phase: \t" + this.phase;
+            g.DrawString(str, font, Brushes.Black, p);
         }
 
-        private List<Vector> ViewPortTransformation(List<Vector> vectors, Matrix transformation)
+        private List<Vector> ViewingPipeline(List<Vector> vectors, Matrix transformation)
+        {
+            List<Vector> vb = ModelTransformation(vectors, transformation);
+            vb = ViewTransformation(vb);
+            vb = ProjectionTransformation(vb);
+            vb = ViewPortTransformation(vb);
+            return vb;
+        }
+
+        // Camera
+        float r = 10;
+        float theta = -100; // θ
+        float phi = -10; // φ
+        float d = 800;
+
+        private List<Vector> ProjectionTransformation(List<Vector> vectors)
         {
             List<Vector> vb = new List<Vector>();
 
             foreach (Vector v in vectors)
             {
-                Vector n = transformation * v;
+                Vector n = v * new Matrix(
+                    -(d/v.z), 0, 0, 0, 
+                    0, (-d/v.z), 0, 0,
+                    0, 0, 0, 0,
+                    0, 0, 0, 0);
                 vb.Add(n);
+            }
+
+            return vb;
+        }
+
+        private List<Vector> ViewTransformation(List<Vector> vectors)
+        {
+            List<Vector> vb = new List<Vector>();
+
+            Matrix m = Matrix.InverseMatrix(r, theta, phi);
+
+            foreach (Vector v in vectors)
+            {
+                // Translate to camera position
+                Vector n = v * m;
+                vb.Add(n);
+            }
+
+            return vb; 
+        }
+
+        private List<Vector> ModelTransformation(List<Vector> vectors, Matrix transformation)
+        {
+            List<Vector> vb = new List<Vector>();
+
+            foreach (Vector v in vectors)
+            {
+                vb.Add(transformation * v);
+            }
+
+            return vb;
+        }
+
+        private List<Vector> ViewPortTransformation(List<Vector> vectors)
+        {
+            List<Vector> vb = new List<Vector>();
+
+            foreach (Vector v in vectors)
+            {
+                vb.Add(v);
             }
 
             foreach (Vector v in vb)
@@ -147,6 +160,265 @@ namespace MatrixTransformations
             }
 
             return vb;
+        }
+        private void startAnimation()
+        {
+            this.phase = 1;
+            resetValues();
+
+            // Start timer
+            timer = new System.Timers.Timer(50);
+            timer.Elapsed += AnimationStep;
+            timer.AutoReset = true;
+            timer.Enabled = true;
+        }
+
+        private void stopAnimation()
+        {
+            if (timer != null)
+            {
+                timer.Stop();
+                timer.Dispose();
+            }
+        }
+
+        bool subphase = true; 
+        private void AnimationStep(Object source, ElapsedEventArgs e)
+        {
+            switch (phase)
+            {
+                case 1:
+                    if (subphase)
+                    {
+                        scale += 0.01f;
+                        if (scale >= 1.5) subphase = false; 
+                    } else
+                    {
+                        scale -= 0.01f;
+                        if (scale <= 1)
+                        {
+                            scale = 1;
+                            subphase = true; 
+                            phase++;
+                        }
+                    }
+                    theta--;
+                    break;
+                case 2:
+                    if (subphase)
+                    {
+                        rx += 1f;
+                        if (rx >= 45) subphase = false;
+                    }
+                    else
+                    {
+                        rx -= 1f;
+                        if (rx <= 0)
+                        {
+                            rx = 0;
+                            subphase = true;
+                            phase++;
+                        }
+                    }
+                    theta--;
+                    break;
+                case 3:
+                    if (subphase)
+                    {
+                        ry += 1f;
+                        if (ry >= 45) subphase = false;
+                    }
+                    else
+                    {
+                        ry -= 1f;
+                        if (ry <= 0)
+                        {
+                            ry = 0;
+                            subphase = true;
+                            phase++;
+                        }
+                    }
+                    phi++;
+                    break;
+                case 4:
+                    if (theta < -100) theta++;
+                    if (phi > -10) phi--;
+                    if (theta == -100 && phi == -10) phase = 1;
+                    break;
+                default:
+                    phase = 0;
+                    stopAnimation();
+                    break;
+            }
+            Invalidate();
+        }
+
+        private void resetValues()
+        {
+            dx = 0;
+            dy = 0;
+            dz = 0;
+            rx = 0;
+            ry = 0;
+            rz = 0;
+            scale = 1;
+            r = 10;
+            theta = -100;
+            phi = -10;
+            d = 800;
+            stopAnimation();
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+                Application.Exit();
+            if (e.KeyCode == Keys.Up)
+            {
+                dy += 0.1f;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.Down)
+            {
+                dy -= 0.1f;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.Right)
+            {
+                dx += 0.1f;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.Left)
+            {
+                dx -= 0.1f;
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.PageUp)
+            {
+                dz += 0.1f;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.PageDown)
+            {
+                dz -= 0.1f;
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.X)
+            {
+                if (e.Shift)
+                {
+                    rx++;
+                }
+                else
+                {
+                    rx--;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.Y)
+            {
+                if (e.Shift)
+                {
+                    ry++;
+                }
+                else
+                {
+                    ry--;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.Z)
+            {
+                if (e.Shift)
+                {
+                    rz++;
+                }
+                else
+                {
+                    rz--;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.S)
+            {
+                if (e.Shift)
+                {
+                    scale += 0.1f;
+                }
+                else
+                {
+                    scale -= 0.1f;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.R)
+            {
+                if (e.Shift)
+                {
+                    r++;
+                }
+                else
+                {
+                    r--;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.D)
+            {
+                if (e.Shift)
+                {
+                    d += 10;
+                }
+                else
+                {
+                    d -= 10;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.P)
+            {
+                if (e.Shift)
+                {
+                    phi++;
+                }
+                else
+                {
+                    phi--;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.T)
+            {
+                if (e.Shift)
+                {
+                    theta++;
+                }
+                else
+                {
+                    theta--;
+                }
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.A)
+            {
+                startAnimation();
+            }
+
+            if (e.KeyCode == Keys.C)
+            {
+                resetValues();
+                Invalidate();
+            }
         }
     }
 }
