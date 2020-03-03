@@ -163,14 +163,16 @@ namespace MatrixTransformations
         }
         private void startAnimation()
         {
-            this.phase = 1;
-            resetValues();
+            if (timer == null || !timer.Enabled)
+            {
+                this.phase = 1;
 
-            // Start timer
-            timer = new System.Timers.Timer(50);
-            timer.Elapsed += AnimationStep;
-            timer.AutoReset = true;
-            timer.Enabled = true;
+                // Start timer
+                timer = new System.Timers.Timer(50);
+                timer.Elapsed += AnimationStep;
+                timer.AutoReset = true;
+                timer.Enabled = true;
+            }
         }
 
         private void stopAnimation()
