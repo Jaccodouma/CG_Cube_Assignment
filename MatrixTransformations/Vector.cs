@@ -13,7 +13,8 @@ namespace MatrixTransformations
             this.y = 0;
             this.w = 0;
         }
-
+        public Vector(float x, float y): this(x,y,1)
+        {}
         public Vector(float x, float y, float w)
         {
             this.x = x;

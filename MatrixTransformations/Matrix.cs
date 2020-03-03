@@ -25,16 +25,16 @@ namespace MatrixTransformations
         public Matrix(Vector v)
         {
             mat[0, 0] = v.x;
-            mat[1, 1] = v.y; 
-            mat[2, 2] = v.w;
+            mat[1, 0] = v.y; 
+            mat[2, 0] = v.w;
         }
 
         public Vector ToVector()
         {
             return new Vector(
-                mat[0, 0] + mat[0, 1] + mat[0, 2],
-                mat[1, 0] + mat[1, 1] + mat[1, 2],
-                mat[2, 0] + mat[2, 1] + mat[2, 2]);
+                mat[0, 0],
+                mat[1, 0],
+                mat[2, 0]);
         }
 
         public static Matrix operator +(Matrix m1, Matrix m2)
@@ -132,7 +132,7 @@ namespace MatrixTransformations
                 if (x==0) { s += "/\t"; } else if (x==mat.GetLength(0)-1) { s += "\\\t"; } else { s += "|\t"; }; // Nice formatting
                 for (int y=0; y<mat.GetLength(1); y++)
                 {
-                    s += mat[x, y] + "\t";
+                    s += mat[x, y] + " \t";
                 }
                 if (x == 0) { s += "\\"; } else if (x == mat.GetLength(0) - 1) { s += "/"; } else { s += "|"; }; // Nice formatting
                 s += "\n";

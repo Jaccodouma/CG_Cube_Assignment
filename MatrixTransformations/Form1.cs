@@ -36,7 +36,6 @@ namespace MatrixTransformations
             this.translation = new Vector(75, -25, 1);
             this.Mat_Scale = Matrix.Scale((float)1.5);
             this.Mat_Rot = Matrix.Rotate(rotation);
-            this.Mat_Trl = Matrix.TranslateMatrix(translation);
 
             // Define axes
             x_axis = new AxisX(200);
@@ -49,12 +48,11 @@ namespace MatrixTransformations
             square_4 = new Square(Color.DarkBlue, 100);
 
             // TESTS (I know...)
-            Vector v = new Vector(10, 20, 1);
+            Vector v = new Vector(100, 100, 1);
             Matrix m1 = Matrix.TranslateMatrix(new Vector(5, -30, 1));
 
-            Console.WriteLine(new Matrix(v));
             Console.WriteLine(m1);
-            Console.WriteLine(m1 * new Matrix(v));
+            Console.WriteLine(v);
 
             Console.WriteLine(m1 * v);
         }
@@ -63,66 +61,16 @@ namespace MatrixTransformations
         {
             base.OnPaint(e);
 
-            // Buffer for transformations
-            List<Vector> vectorBuffer = new List<Vector>();
-
-            // Draw square_1 (purple)
-            vectorBuffer.Clear();
-            foreach (Vector v in square_1.vb)
-            {
-                vectorBuffer.Add(v * Matrix.Identity());
-            }
-            ViewPortTransformation(vectorBuffer);
-            square_1.Draw(e.Graphics, vectorBuffer);
-
-            // Draw square_2 (cyan)
-            vectorBuffer.Clear();
-            foreach(Vector v in square_2.vb)
-            {
-                vectorBuffer.Add(v * Mat_Scale);
-            }
-
-            ViewPortTransformation(vectorBuffer);
-            square_2.Draw(e.Graphics, vectorBuffer);
-
-
-            // Draw square_3 (orange)
-            vectorBuffer.Clear();
-            foreach (Vector v in square_3.vb)
-            {
-                vectorBuffer.Add(v * Mat_Rot);
-            }
-
-            ViewPortTransformation(vectorBuffer);
-            square_3.Draw(e.Graphics, vectorBuffer);
-
-            // Draw square_4 (dark blue)
-            vectorBuffer.Clear();
-            foreach (Vector v in square_4.vb)
-            {
-                vectorBuffer.Add(v * Mat_Trl);
-            }
-
-            ViewPortTransformation(vectorBuffer);
-            square_4.Draw(e.Graphics, vectorBuffer);
+            // Draw squares
+            Matrix m = Matrix.TranslateMatrix(new Vector(-100, 50, 1)) * Matrix.Scale(0.79f) * Matrix.Rotate(45);
+            square_1.Draw(e.Graphics, ViewPortTransformation(square_1.vb, m));
+            square_2.Draw(e.Graphics, ViewPortTransformation(square_2.vb, Mat_Scale));
+            square_3.Draw(e.Graphics, ViewPortTransformation(square_3.vb, Mat_Rot));
+            square_4.Draw(e.Graphics, ViewPortTransformation(square_4.vb, Matrix.TranslateMatrix(translation)));
 
             // Draw axes
-            vectorBuffer.Clear();
-            foreach (Vector v in x_axis.vb)
-            {
-                vectorBuffer.Add(v * Matrix.Identity());
-            }
-            ViewPortTransformation(vectorBuffer);
-            x_axis.Draw(e.Graphics, vectorBuffer);
-
-            vectorBuffer.Clear();
-            foreach (Vector v in y_axis.vb)
-            {
-                vectorBuffer.Add(v * Matrix.Identity());
-            }
-            ViewPortTransformation(vectorBuffer);
-            y_axis.Draw(e.Graphics, vectorBuffer);
-
+            x_axis.Draw(e.Graphics, ViewPortTransformation(x_axis.vb, Matrix.Identity()));
+            y_axis.Draw(e.Graphics, ViewPortTransformation(y_axis.vb, Matrix.Identity()));
         }
 
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -155,11 +103,40 @@ namespace MatrixTransformations
                 this.Mat_Scale += Matrix.Identity() * 0.05f;
                 Invalidate();
             }
+
+            if (e.KeyCode == Keys.Up)
+            {
+                this.translation.y++;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.Down)
+            {
+                this.translation.y--;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.Left)
+            {
+                this.translation.x--;
+                Invalidate();
+            }
+            if (e.KeyCode == Keys.Right)
+            {
+                this.translation.x++;
+                Invalidate();
+            }
         }
 
-        private void ViewPortTransformation(List<Vector> vectors)
+        private List<Vector> ViewPortTransformation(List<Vector> vectors, Matrix transformation)
         {
+            List<Vector> vb = new List<Vector>();
+
             foreach (Vector v in vectors)
+            {
+                Vector n = transformation * v;
+                vb.Add(n);
+            }
+
+            foreach (Vector v in vb)
             {
                 // Flip Y-axis
                 v.y *= -1;
@@ -168,6 +145,8 @@ namespace MatrixTransformations
                 v.x += (WIDTH / 2);
                 v.y += (HEIGHT / 2);
             }
+
+            return vb;
         }
     }
 }

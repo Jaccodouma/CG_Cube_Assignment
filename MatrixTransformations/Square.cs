@@ -18,10 +18,10 @@ namespace MatrixTransformations
             this.weight = weight;
 
             vb = new List<Vector>();
-            vb.Add(new Vector(-size, -size, 0));
-            vb.Add(new Vector(size, -size, 0));
-            vb.Add(new Vector(size, size, 0));
-            vb.Add(new Vector(-size, size, 0));
+            vb.Add(new Vector(-size, -size));
+            vb.Add(new Vector( size, -size));
+            vb.Add(new Vector( size,  size));
+            vb.Add(new Vector(-size,  size));
         }
 
         public void Draw(Graphics g, List<Vector> vb)
