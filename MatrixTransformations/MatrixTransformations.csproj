@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="AxisX.cs" />
     <Compile Include="AxisY.cs" />
+    <Compile Include="Cube.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

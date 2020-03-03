@@ -15,7 +15,7 @@ namespace MatrixTransformations
         Square square_1, square_2, square_3, square_4;
 
         // Transform matrices
-        Matrix Mat_Scale, Mat_Rot, Mat_Trl;
+        Matrix Mat_Scale, Mat_Rot;
         int rotation;
         Vector translation;
 
@@ -35,7 +35,7 @@ namespace MatrixTransformations
             this.rotation = 20;
             this.translation = new Vector(75, -25, 1);
             this.Mat_Scale = Matrix.Scale((float)1.5);
-            this.Mat_Rot = Matrix.Rotate(rotation);
+            this.Mat_Rot = Matrix.RotateZ(rotation);
 
             // Define axes
             x_axis = new AxisX(200);
@@ -48,8 +48,8 @@ namespace MatrixTransformations
             square_4 = new Square(Color.DarkBlue, 100);
 
             // TESTS (I know...)
-            Vector v = new Vector(100, 100, 1);
-            Matrix m1 = Matrix.TranslateMatrix(new Vector(5, -30, 1));
+            Vector v = new Vector(100, 100, 0);
+            Matrix m1 = Matrix.TranslateMatrix(new Vector(5, -30, 10));
 
             Console.WriteLine(m1);
             Console.WriteLine(v);
@@ -62,7 +62,7 @@ namespace MatrixTransformations
             base.OnPaint(e);
 
             // Draw squares
-            Matrix m = Matrix.TranslateMatrix(new Vector(-100, 50, 1)) * Matrix.Scale(0.79f) * Matrix.Rotate(45);
+            Matrix m = Matrix.TranslateMatrix(new Vector(-100, 50, 1)) * Matrix.Scale(0.79f) * Matrix.RotateZ(45);
             square_1.Draw(e.Graphics, ViewPortTransformation(square_1.vb, m));
             square_2.Draw(e.Graphics, ViewPortTransformation(square_2.vb, Mat_Scale));
             square_3.Draw(e.Graphics, ViewPortTransformation(square_3.vb, Mat_Rot));
@@ -89,8 +89,8 @@ namespace MatrixTransformations
                     this.rotation += 1;
                 }
                 if (this.rotation < 0) this.rotation += 360;
-                if (this.rotation >= 360) this.rotation -= 360; // %= still allows negatives? 
-                this.Mat_Rot = Matrix.Rotate(this.rotation);
+                if (this.rotation >= 360) this.rotation -= 360;
+                this.Mat_Rot = Matrix.RotateZ(this.rotation);
                 Invalidate();
             }
 

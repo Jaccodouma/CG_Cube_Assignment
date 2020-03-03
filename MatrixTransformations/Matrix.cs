@@ -5,7 +5,7 @@ namespace MatrixTransformations
 {
     public class Matrix
     {
-        float[,] mat = new float[3,3];
+        float[,] mat = new float[4,4];
 
         public Matrix()
         { // CREATES IDENTITY MATRIX, UPDATE Identity() IF THIS CHANGES (:
@@ -13,20 +13,23 @@ namespace MatrixTransformations
                 for (int y = 0; y < mat.GetLength(1); y++)
                     if (x == y) { mat[x, y] = 1; } else { mat[x, y] = 0; }
         }
-        public Matrix(float m11, float m12, float m13,
-                      float m21, float m22, float m23,
-                      float m31, float m32, float m33)
+        public Matrix(float m11, float m12, float m13, float m14,
+                      float m21, float m22, float m23, float m24,
+                      float m31, float m32, float m33, float m34,
+                      float m41, float m42, float m43, float m44)
         {
-            mat[0, 0] = m11; mat[0, 1] = m12; mat[0, 2] = m13;
-            mat[1, 0] = m21; mat[1, 1] = m22; mat[1, 2] = m23;
-            mat[2, 0] = m31; mat[2, 1] = m32; mat[2, 2] = m33;
+            mat[0, 0] = m11; mat[0, 1] = m12; mat[0, 2] = m13; mat[0, 3] = m14;
+            mat[1, 0] = m21; mat[1, 1] = m22; mat[1, 2] = m23; mat[1, 3] = m24;
+            mat[2, 0] = m31; mat[2, 1] = m32; mat[2, 2] = m33; mat[2, 3] = m34;
+            mat[3, 0] = m41; mat[3, 1] = m42; mat[3, 2] = m43; mat[3, 3] = m44;
         }
 
         public Matrix(Vector v)
         {
             mat[0, 0] = v.x;
-            mat[1, 0] = v.y; 
-            mat[2, 0] = v.w;
+            mat[1, 0] = v.y;
+            mat[2, 0] = v.z;
+            mat[3, 0] = v.w;
         }
 
         public Vector ToVector()
@@ -34,7 +37,8 @@ namespace MatrixTransformations
             return new Vector(
                 mat[0, 0],
                 mat[1, 0],
-                mat[2, 0]);
+                mat[2, 0],
+                mat[3, 0]);
         }
 
         public static Matrix operator +(Matrix m1, Matrix m2)
@@ -101,25 +105,47 @@ namespace MatrixTransformations
         public static Matrix Scale(float s)
         {
             Matrix m = new Matrix()*s;
-            m.mat[2, 2] = 1;
+            m.mat[3, 3] = 1;
             return m;
         }
 
-        public static Matrix Rotate(float degrees)
+        public static Matrix RotateZ(float degrees)
         {
             degrees = degrees * (float) Math.PI / 180;
             return new Matrix(
-                (float)Math.Cos(degrees),   (float)-Math.Sin(degrees),  0,
-                (float)Math.Sin(degrees),   (float)Math.Cos(degrees),   0,
-                0,                          0,                          1
+                (float)Math.Cos(degrees),   (float)-Math.Sin(degrees),  0, 0,
+                (float)Math.Sin(degrees),   (float)Math.Cos(degrees),   0, 0,
+                0,                          0,                          1, 0,
+                0,                          0,                          0, 1
+            );
+        }
+        public static Matrix RotateX(float degrees)
+        {
+            degrees = degrees * (float)Math.PI / 180;
+            return new Matrix(
+                1, 0,                        0,                         0,
+                0, (float)Math.Cos(degrees), (float)-Math.Sin(degrees), 0,
+                0, (float)Math.Sin(degrees), (float) Math.Cos(degrees), 0,
+                0, 0,                        0,                         1
+            );
+        }
+        public static Matrix RotateY(float degrees)
+        {
+            degrees = degrees * (float)Math.PI / 180;
+            return new Matrix(
+                (float) Math.Cos(degrees), 0, (float)Math.Sin(degrees), 0,
+                0,                         1, 0,                        0,
+                (float)-Math.Sin(degrees), 0, (float)Math.Cos(degrees), 0,
+                0,                         0, 0,                        1
             );
         }
 
         public static Matrix TranslateMatrix(Vector t)
         {
             Matrix m = Matrix.Identity();
-            m.mat[0, 2] = t.x;
-            m.mat[1, 2] = t.y;
+            m.mat[0, 3] = t.x;
+            m.mat[1, 3] = t.y;
+            m.mat[2, 3] = t.z;
             return m;
         }
 
