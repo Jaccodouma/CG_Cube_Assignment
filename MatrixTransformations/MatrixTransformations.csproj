@@ -47,9 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Axis.cs" />
-    <Compile Include="AxisX.cs" />
-    <Compile Include="AxisY.cs" />
-    <Compile Include="AxisZ.cs" />
     <Compile Include="Cube.cs" />
     <Compile Include="DrawableObject.cs" />
     <Compile Include="Form1.cs">
@@ -58,6 +55,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Grid.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

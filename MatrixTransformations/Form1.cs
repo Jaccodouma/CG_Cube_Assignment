@@ -10,6 +10,7 @@ namespace MatrixTransformations
     {
         // Objects
         Axis axis_x, axis_y, axis_z;
+        Grid grid; 
         Cube cube;
 
         // Transformations
@@ -38,6 +39,8 @@ namespace MatrixTransformations
             axis_y = new Axis(Color.Green, "y", new Vector(0, 3, 0));
             axis_z = new Axis(Color.Blue, "z", new Vector(0, 0, 3));
 
+            grid = new Grid(3);
+
             // Create object
             cube = new Cube(Color.Orange);
         }
@@ -51,6 +54,8 @@ namespace MatrixTransformations
             // Draw squares
             Matrix transformation = Matrix.TranslateMatrix(new Vector(dx, dy, dz)) * Matrix.RotateX(rx) * Matrix.RotateY(ry) * Matrix.RotateZ(rz) * Matrix.Scale(scale);
             cube.Draw(e.Graphics, ViewingPipeline(cube.vb, transformation));
+
+            grid.Draw(e.Graphics, ViewingPipeline(grid.vb, Matrix.Identity()));
 
             // Draw axes
             axis_x.Draw(e.Graphics, ViewingPipeline(axis_x.vb, Matrix.Identity()));
