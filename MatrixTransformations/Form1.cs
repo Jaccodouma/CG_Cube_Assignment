@@ -39,7 +39,7 @@ namespace MatrixTransformations
             axis_y = new Axis(Color.Green, "y", new Vector(0, 3, 0));
             axis_z = new Axis(Color.Blue, "z", new Vector(0, 0, 3));
 
-            grid = new Grid(3);
+            grid = new Grid(8);
 
             // Create object
             cube = new Cube(Color.Orange);
