@@ -8,13 +8,11 @@ namespace MatrixTransformations
 {
     public partial class Form1 : Form
     {
-        // Axes
-        AxisX x_axis;
-        AxisY y_axis;
-        AxisZ z_axis;
-
         // Objects
+        Axis axis_x, axis_y, axis_z;
         Cube cube;
+
+        // Transformations
         float dx, dy, dz, rx, ry, rz, scale, phase; 
 
         // Window dimensions
@@ -36,9 +34,9 @@ namespace MatrixTransformations
             this.scale = 1; 
 
             // Define axes
-            x_axis = new AxisX(3);
-            y_axis = new AxisY(3);
-            z_axis = new AxisZ(3);
+            axis_x = new Axis(Color.Red, "x", new Vector(3, 0, 0));
+            axis_y = new Axis(Color.Green, "y", new Vector(0, 3, 0));
+            axis_z = new Axis(Color.Blue, "z", new Vector(0, 0, 3));
 
             // Create object
             cube = new Cube(Color.Orange);
@@ -55,9 +53,9 @@ namespace MatrixTransformations
             cube.Draw(e.Graphics, ViewingPipeline(cube.vb, transformation));
 
             // Draw axes
-            x_axis.Draw(e.Graphics, ViewingPipeline(x_axis.vb, Matrix.Identity()));
-            y_axis.Draw(e.Graphics, ViewingPipeline(y_axis.vb, Matrix.Identity()));
-            z_axis.Draw(e.Graphics, ViewingPipeline(z_axis.vb, Matrix.Identity()));
+            axis_x.Draw(e.Graphics, ViewingPipeline(axis_x.vb, Matrix.Identity()));
+            axis_y.Draw(e.Graphics, ViewingPipeline(axis_y.vb, Matrix.Identity()));
+            axis_z.Draw(e.Graphics, ViewingPipeline(axis_z.vb, Matrix.Identity()));
         }
 
         private void drawControls(Graphics g)
@@ -167,7 +165,7 @@ namespace MatrixTransformations
             {
                 this.phase = 1;
 
-                // Start timer
+                // Start timer, do animationstep every 50 ms
                 timer = new System.Timers.Timer(50);
                 timer.Elapsed += AnimationStep;
                 timer.AutoReset = true;
@@ -363,11 +361,11 @@ namespace MatrixTransformations
             {
                 if (e.Shift)
                 {
-                    r++;
+                    r += 0.1f;
                 }
                 else
                 {
-                    r--;
+                    r -= 0.1f;
                 }
                 Invalidate();
             }

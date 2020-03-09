@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace MatrixTransformations
 {
-    public class Cube
+    public class Cube : DrawableObject
     {
 
         //          7----------4
@@ -16,34 +16,37 @@ namespace MatrixTransformations
         //      2----------1
 
         private const int size = 1;
-        public List<Vector> vb = new List<Vector>
-        {
-            new Vector( 1.0f,  1.0f, 1.0f),     //0
-            new Vector( 1.0f, -1.0f, 1.0f),     //1
-            new Vector(-1.0f, -1.0f, 1.0f),     //2
-            new Vector(-1.0f,  1.0f, 1.0f),     //3
-
-            new Vector( 1.0f,  1.0f, -1.0f),    //4
-            new Vector( 1.0f, -1.0f, -1.0f),    //5
-            new Vector(-1.0f, -1.0f, -1.0f),    //6
-            new Vector(-1.0f,  1.0f, -1.0f),    //7
-
-            new Vector( 1.2f,  1.2f, 1.2f),     //0
-            new Vector( 1.2f, -1.2f, 1.2f),     //1
-            new Vector(-1.2f, -1.2f, 1.2f),     //2
-            new Vector(-1.2f,  1.2f, 1.2f),     //3
-
-            new Vector( 1.2f,  1.2f, -1.2f),    //4
-            new Vector( 1.2f, -1.2f, -1.2f),    //5
-            new Vector(-1.2f, -1.2f, -1.2f),    //6
-            new Vector(-1.2f,  1.2f, -1.2f)     //7
-        };
+        public override List<Vector> vb { get; set; }
 
         Color col;
 
-        public Cube(Color c) { col = c; }
+        public Cube(Color c) { 
+            col = c;
+            vb = new List<Vector>
+            {
+                new Vector( 1.0f,  1.0f, 1.0f),     //0
+                new Vector( 1.0f, -1.0f, 1.0f),     //1
+                new Vector(-1.0f, -1.0f, 1.0f),     //2
+                new Vector(-1.0f,  1.0f, 1.0f),     //3
 
-        public void Draw(Graphics g, List<Vector> vb)
+                new Vector( 1.0f,  1.0f, -1.0f),    //4
+                new Vector( 1.0f, -1.0f, -1.0f),    //5
+                new Vector(-1.0f, -1.0f, -1.0f),    //6
+                new Vector(-1.0f,  1.0f, -1.0f),    //7
+
+                new Vector( 1.2f,  1.2f, 1.2f),     //0
+                new Vector( 1.2f, -1.2f, 1.2f),     //1
+                new Vector(-1.2f, -1.2f, 1.2f),     //2
+                new Vector(-1.2f,  1.2f, 1.2f),     //3
+
+                new Vector( 1.2f,  1.2f, -1.2f),    //4
+                new Vector( 1.2f, -1.2f, -1.2f),    //5
+                new Vector(-1.2f, -1.2f, -1.2f),    //6
+                new Vector(-1.2f,  1.2f, -1.2f)     //7
+            };
+        }
+
+        public override void Draw(Graphics g, List<Vector> vb)
         {
             Pen pen = new Pen(col, 3f);
             g.DrawLine(pen, vb[0].x, vb[0].y, vb[1].x, vb[1].y);    //0 -> 1
