@@ -18,10 +18,23 @@ namespace MatrixTransformations
         private const int size = 1;
         public override List<Vector> vb { get; set; }
 
-        Color col;
+        private int _hue;
+        public int hue
+        {
+            get
+            {
+                return this._hue;
+            }
+            set
+            {
+                while (value < 360) value += 360;
+                value %= 360;
+                this._hue = value; 
+            }
+        }
 
-        public Cube(Color c) { 
-            col = c;
+        public Cube(int hue) {
+            this.hue = hue;
             vb = new List<Vector>
             {
                 new Vector( 1.0f,  1.0f, 1.0f),     //0
@@ -48,7 +61,7 @@ namespace MatrixTransformations
 
         public override void Draw(Graphics g, List<Vector> vb)
         {
-            Pen pen = new Pen(col, 3f);
+            Pen pen = new Pen(colorFromHue(hue), 3f);
             g.DrawLine(pen, vb[0].x, vb[0].y, vb[1].x, vb[1].y);    //0 -> 1
             g.DrawLine(pen, vb[1].x, vb[1].y, vb[2].x, vb[2].y);    //1 -> 2
             g.DrawLine(pen, vb[2].x, vb[2].y, vb[3].x, vb[3].y);    //2 -> 3
@@ -71,6 +84,50 @@ namespace MatrixTransformations
                 PointF p = new PointF(vb[i + 8].x, vb[i + 8].y);
                 g.DrawString(i.ToString(), font, Brushes.Black, p);
             }
+        }
+        public Color colorFromHue(int hue)
+        {
+            hue = hue % 360;
+            while (hue < 0) hue += 360;
+            int r = 0, g = 0, b = 0;
+
+            if (hue < 60)
+            {
+                r = 255;
+                g = (hue % 60) * (255 / 60);
+                b = 0;
+            }
+            else if (hue < 120)
+            {
+                r = 255 - (hue % 60) * (255 / 60);
+                g = 255;
+                b = 0;
+            }
+            else if (hue < 180)
+            {
+                r = 0;
+                g = 255;
+                b = (hue % 60) * (255 / 60);
+            }
+            else if (hue < 240)
+            {
+                r = 0;
+                g = 255 - (hue % 60) * (255 / 60);
+                b = 255;
+            }
+            else if (hue < 300)
+            {
+                r = (hue % 60) * (255 / 60);
+                g = 0;
+                b = 255;
+            }
+            else if (hue < 360)
+            {
+                r = 255;
+                g = 0;
+                b = 255 - (hue % 60) * (255 / 60);
+            };
+            return Color.FromArgb(r, g, b);
         }
     }   
 }

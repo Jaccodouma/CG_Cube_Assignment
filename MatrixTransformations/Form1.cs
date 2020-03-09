@@ -14,7 +14,23 @@ namespace MatrixTransformations
         Cube cube;
 
         // Transformations
-        float dx, dy, dz, rx, ry, rz, scale, phase; 
+        float dx, dy, dz, rx, ry, rz, scale, phase;
+
+        // Hue for cube colour
+        private int _hue = 30;
+        public int hue
+        {
+            get
+            {
+                return this._hue;
+            }
+            set
+            {
+                while (value < 360) value += 360;
+                value %= 360;
+                this._hue = value;
+            }
+        }
 
         // Window dimensions
         const int WIDTH = 800;
@@ -42,7 +58,7 @@ namespace MatrixTransformations
             grid = new Grid(8);
 
             // Create object
-            cube = new Cube(Color.Orange);
+            cube = new Cube(hue);
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -67,6 +83,7 @@ namespace MatrixTransformations
         {
             Font font = new Font("Arial", 10);
             PointF p = new PointF(0,0);
+            Color c = cube.colorFromHue(cube.hue);
             string str =
                 "Scale: \t\t" + this.scale + "\t(S/s)\n" +
                 "TranslateX: \t" + this.dx + "\t(Left/Right)\n" +
@@ -78,8 +95,10 @@ namespace MatrixTransformations
                 "r: \t" + this.r + "\t(R/r)\n" +
                 "d: \t" + this.d + "\t(D/d)\n" +
                 "phi: \t" + this.phi + "\t(P/p)\n" +
-                "theta: \t" + this.theta + "\t(T/t)\n" + 
-                "phase: \t" + this.phase;
+                "theta: \t" + this.theta + "\t(T/t)\n" +
+                "phase: \t" + this.phase + "\n\n" +
+                "hue: \t" + this.hue + "\t(H/h)\n" +
+                "R:" + c.R + "\t" + "G:" + c.G + "\t" + "B:" + c.B;
             g.DrawString(str, font, Brushes.Black, p);
         }
 
@@ -190,6 +209,9 @@ namespace MatrixTransformations
         bool subphase = true; 
         private void AnimationStep(Object source, ElapsedEventArgs e)
         {
+            cube.hue = hue++;
+            hue %= 360;
+
             switch (phase)
             {
                 case 1:
@@ -271,6 +293,8 @@ namespace MatrixTransformations
             theta = -100;
             phi = -10;
             d = 800;
+            hue = 30;
+            cube.hue = hue;
             stopAnimation();
         }
 
@@ -422,6 +446,22 @@ namespace MatrixTransformations
             if (e.KeyCode == Keys.C)
             {
                 resetValues();
+                Invalidate();
+            }
+
+            if (e.KeyCode == Keys.H)
+            {
+                if (e.Shift)
+                {
+                    hue--;
+                } else
+                {
+                    hue++;
+                }
+                hue %= 360;
+
+                cube.hue = hue;
+
                 Invalidate();
             }
         }
