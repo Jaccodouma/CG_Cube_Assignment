@@ -14,7 +14,13 @@ namespace MatrixTransformations
         Cube cube;
 
         // Transformations
-        float dx, dy, dz, rx, ry, rz, scale, phase;
+        float dx, dy, dz, rx, ry, rz, scale;
+
+        // Camera
+        float r = 10;
+        float theta = -100; // θ
+        float phi = -10; // φ
+        float d = 800;
 
         // Hue for cube colour
         private int _hue = 30;
@@ -38,6 +44,14 @@ namespace MatrixTransformations
 
         // Timer for animations
         private static System.Timers.Timer timer;
+
+        // Animations
+        Boolean subPhaseAnimation = true;
+        Boolean transX = false;
+        Boolean transY = false;
+        Boolean transZ = false;
+        int phase = 0;
+        int animationSpeed = 50;
 
         public Form1()
         {
@@ -65,7 +79,7 @@ namespace MatrixTransformations
         {
             base.OnPaint(e);
 
-            drawControls(e.Graphics);
+            DrawControls(e.Graphics);
 
             // Draw squares
             Matrix transformation = Matrix.TranslateMatrix(new Vector(dx, dy, dz)) * Matrix.RotateX(rx) * Matrix.RotateY(ry) * Matrix.RotateZ(rz) * Matrix.Scale(scale);
@@ -79,7 +93,7 @@ namespace MatrixTransformations
             axis_z.Draw(e.Graphics, ViewingPipeline(axis_z.vb, Matrix.Identity()));
         }
 
-        private void drawControls(Graphics g)
+        private void DrawControls(Graphics g)
         {
             Font font = new Font("Arial", 10);
             PointF p = new PointF(0,0);
@@ -91,13 +105,20 @@ namespace MatrixTransformations
                 "TranslateZ: \t" + this.dz + "\t(PgUp/PgDn)\n" +
                 "RotateX: \t" + this.rx + "\t(X/x)\n" +
                 "RotateY: \t" + this.ry + "\t(Y/y)\n" +
-                "RotateZ: \t" + this.rz + "\t(Z/z)\n\n" +
-                "r: \t" + this.r + "\t(R/r)\n" +
+                "RotateZ: \t" + this.rz + "\t(Z/z)\n" +
+
+                "\nr: \t" + this.r + "\t(R/r)\n" +
                 "d: \t" + this.d + "\t(D/d)\n" +
                 "phi: \t" + this.phi + "\t(P/p)\n" +
                 "theta: \t" + this.theta + "\t(T/t)\n" +
-                "phase: \t" + this.phase + "\n\n" +
-                "hue: \t" + this.hue + "\t(H/h)\n" +
+                "phase: \t" + this.phase + "\n" +
+                "subphase:\t" + this.subPhaseAnimation + "\n" +
+                "speed:\t" + this.animationSpeed + "\t(+/-)\n" +
+                "TransX:\t" + this.transX + "\tNum1\n" +
+                "TransY:\t" + this.transY + "\tNum2\n" +
+                "TransZ:\t" + this.transZ + "\tNum3\n" +
+
+                "\nhue: \t" + this.hue + "\t(H/h)\n" +
                 "R:" + c.R + "\t" + "G:" + c.G + "\t" + "B:" + c.B;
             g.DrawString(str, font, Brushes.Black, p);
         }
@@ -110,12 +131,6 @@ namespace MatrixTransformations
             vb = ViewPortTransformation(vb);
             return vb;
         }
-
-        // Camera
-        float r = 10;
-        float theta = -100; // θ
-        float phi = -10; // φ
-        float d = 800;
 
         private List<Vector> ProjectionTransformation(List<Vector> vectors)
         {
@@ -183,21 +198,21 @@ namespace MatrixTransformations
 
             return vb;
         }
-        private void startAnimation()
+        private void StartAnimation()
         {
             if (timer == null || !timer.Enabled)
             {
                 this.phase = 1;
 
                 // Start timer, do animationstep every 50 ms
-                timer = new System.Timers.Timer(50);
+                timer = new System.Timers.Timer(this.animationSpeed);
                 timer.Elapsed += AnimationStep;
                 timer.AutoReset = true;
                 timer.Enabled = true;
             }
         }
 
-        private void stopAnimation()
+        private void StopAnimation()
         {
             if (timer != null)
             {
@@ -206,81 +221,156 @@ namespace MatrixTransformations
             }
         }
 
-        bool subphase = true; 
         private void AnimationStep(Object source, ElapsedEventArgs e)
         {
             cube.hue = hue++;
             hue %= 360;
 
-            switch (phase)
+            switch (this.phase)
             {
                 case 1:
-                    if (subphase)
+                    if (this.subPhaseAnimation)
                     {
-                        scale += 0.01f;
-                        if (scale >= 1.5) subphase = false; 
-                    } else
-                    {
-                        scale -= 0.01f;
-                        if (scale <= 1)
+                        if (this.scale < 1.5)
                         {
-                            scale = 1;
-                            subphase = true; 
-                            phase++;
+                            this.scale += 0.01f;
+                        }
+                        else
+                        {
+                            this.subPhaseAnimation = false;
                         }
                     }
-                    theta--;
+                    else
+                    {
+                        if (this.scale >= 1)
+                        {
+                            this.scale -= 0.01f;
+                        }
+                        else
+                        {
+                            this.subPhaseAnimation = true;
+                            this.phase = 2;
+                        }
+                    }
+                    if (this.transX)
+                    {
+                        this.dx += 0.01f;
+                    }
+                    if (this.transY)
+                    {
+                        this.dy += 0.01f;
+                    }
+                    if (this.transZ)
+                    {
+                        this.dz += 0.01f;
+                    }
+                    this.theta--;
                     break;
                 case 2:
-                    if (subphase)
+                    if (this.subPhaseAnimation)
                     {
-                        rx += 1f;
-                        if (rx >= 45) subphase = false;
+                        if (this.rx < 45)
+                        {
+                            this.rx++;
+                        }
+                        else
+                        {
+                            this.subPhaseAnimation = false;
+                        }
                     }
                     else
                     {
-                        rx -= 1f;
-                        if (rx <= 0)
+                        if (this.rx > 0)
                         {
-                            rx = 0;
-                            subphase = true;
-                            phase++;
+                            this.rx--;
+                        }
+                        else
+                        {
+                            this.subPhaseAnimation = true;
+                            this.phase = 3;
                         }
                     }
-                    theta--;
+                    if (this.transX)
+                    {
+                        this.dx -= 0.01f;
+                    }
+                    if (this.transY)
+                    {
+                        this.dy -= 0.01f;
+                    }
+                    if (this.transZ)
+                    {
+                        this.dz -= 0.01f;
+                    }
+                    this.theta--;
                     break;
                 case 3:
-                    if (subphase)
+                    if (this.subPhaseAnimation)
                     {
-                        ry += 1f;
-                        if (ry >= 45) subphase = false;
+                        if (this.ry < 45)
+                        {
+                            this.ry++;
+                        }
+                        else
+                        {
+                            this.subPhaseAnimation = false;
+                        }
                     }
                     else
                     {
-                        ry -= 1f;
-                        if (ry <= 0)
+                        if (this.ry > 0)
                         {
-                            ry = 0;
-                            subphase = true;
-                            phase++;
+                            this.ry--;
+                        }
+                        else
+                        {
+                            this.subPhaseAnimation = true;
+                            this.phase = 4;
                         }
                     }
-                    phi++;
+                    if (this.transX)
+                    {
+                        this.dx += 0.01f;
+                    }
+                    if (this.transY)
+                    {
+                        this.dy += 0.01f;
+                    }
+                    if (this.transZ)
+                    {
+                        this.dz += 0.01f;
+                    }
+                    this.phi++;
                     break;
                 case 4:
-                    if (theta < -100) theta++;
-                    if (phi > -10) phi--;
-                    if (theta == -100 && phi == -10) phase = 1;
+                    if (this.theta > -100 || this.phi != -10 || this.dx != 0 || this.dy != 0 || this.dz != 0)
+                    {
+                        if (this.theta < -100) this.theta++;
+                        if (this.phi > -10) this.phi--;
+
+                        if (this.dx > 0) this.dx -= 0.01f;
+                        if (this.dx < 0) this.dx += 0.01f;
+
+                        if (this.dy > 0) this.dy -= 0.01f;
+                        if (this.dy < 0) this.dy += 0.01f;
+
+                        if (this.dz > 0) this.dz -= 0.01f;
+                        if (this.dz < 0) this.dz += 0.01f;
+                    }
+                    else
+                    {
+                        ResetValues();
+                        phase = 1;
+                    }
                     break;
                 default:
-                    phase = 0;
-                    stopAnimation();
+                    this.phase = 0;
+                    StopAnimation();
                     break;
             }
             Invalidate();
         }
-
-        private void resetValues()
+        private void ResetValues()
         {
             dx = 0;
             dy = 0;
@@ -295,175 +385,39 @@ namespace MatrixTransformations
             d = 800;
             hue = 30;
             cube.hue = hue;
-            stopAnimation();
+            phase = 0;
+            subPhaseAnimation = true;
+            animationSpeed = 50;
+            StopAnimation();
         }
-
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Escape)
-                Application.Exit();
-            if (e.KeyCode == Keys.Up)
-            {
-                dy += 0.1f;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.Down)
-            {
-                dy -= 0.1f;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.Right)
-            {
-                dx += 0.1f;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.Left)
-            {
-                dx -= 0.1f;
-                Invalidate();
-            }
+            if (e.KeyCode == Keys.Escape) { Application.Exit(); }
+            if (e.KeyCode == Keys.D) { if (e.Shift) { this.d += 1; } else { this.d -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.R) { if (e.Shift) { this.r += 1; } else { this.r -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.T) { if (e.Shift) { this.theta += 1; } else { this.theta -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.P) { if (e.Shift) { this.phi += 1; } else { this.phi -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.X) { if (e.Shift) { this.rx += 1; } else { this.rx -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.Y) { if (e.Shift) { this.ry += 1; } else { this.ry -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.Z) { if (e.Shift) { this.rz += 1; } else { this.rz -= 1; } Invalidate(); }
+            if (e.KeyCode == Keys.S) { if (e.Shift) { this.scale += (float)0.1; } else { this.scale -= (float)0.1; } Invalidate(); }
+            if (e.KeyCode == Keys.C) { if (e.Shift) { ResetValues(); Invalidate(); } }
+            if (e.KeyCode == Keys.A) { if (e.Shift) { StartAnimation(); } else { StopAnimation(); } }
+            if (e.KeyCode == Keys.H) { if (e.Shift) { hue--; } else { hue++; } hue %= 360; cube.hue = hue; Invalidate(); }
 
-            if (e.KeyCode == Keys.PageUp)
-            {
-                dz += 0.1f;
-                Invalidate();
-            }
-            if (e.KeyCode == Keys.PageDown)
-            {
-                dz -= 0.1f;
-                Invalidate();
-            }
+            if (e.KeyCode == Keys.NumPad1) { this.transX = !this.transX; Invalidate(); }
+            if (e.KeyCode == Keys.NumPad2) { this.transY = !this.transY; Invalidate(); }
+            if (e.KeyCode == Keys.NumPad3) { this.transZ = !this.transZ; Invalidate(); }
 
-            if (e.KeyCode == Keys.X)
-            {
-                if (e.Shift)
-                {
-                    rx++;
-                }
-                else
-                {
-                    rx--;
-                }
-                Invalidate();
-            }
+            if (e.KeyCode == Keys.Left) { this.dx -= 1; Invalidate(); }
+            if (e.KeyCode == Keys.Right) { this.dx += 1; Invalidate(); }
+            if (e.KeyCode == Keys.Down) { this.dy -= 1; Invalidate(); }
+            if (e.KeyCode == Keys.Up) { this.dy += 1; Invalidate(); }
+            if (e.KeyCode == Keys.PageDown) { this.dz -= 1; Invalidate(); }
+            if (e.KeyCode == Keys.PageUp) { this.dz += 1; Invalidate(); }
+            if (e.KeyCode == Keys.Add) { this.animationSpeed -= 1; StopAnimation(); StartAnimation(); Invalidate(); }
+            if (e.KeyCode == Keys.Subtract) { this.animationSpeed += 1; StopAnimation(); StartAnimation(); Invalidate(); }
 
-            if (e.KeyCode == Keys.Y)
-            {
-                if (e.Shift)
-                {
-                    ry++;
-                }
-                else
-                {
-                    ry--;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.Z)
-            {
-                if (e.Shift)
-                {
-                    rz++;
-                }
-                else
-                {
-                    rz--;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.S)
-            {
-                if (e.Shift)
-                {
-                    scale += 0.1f;
-                }
-                else
-                {
-                    scale -= 0.1f;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.R)
-            {
-                if (e.Shift)
-                {
-                    r += 0.1f;
-                }
-                else
-                {
-                    r -= 0.1f;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.D)
-            {
-                if (e.Shift)
-                {
-                    d += 10;
-                }
-                else
-                {
-                    d -= 10;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.P)
-            {
-                if (e.Shift)
-                {
-                    phi++;
-                }
-                else
-                {
-                    phi--;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.T)
-            {
-                if (e.Shift)
-                {
-                    theta++;
-                }
-                else
-                {
-                    theta--;
-                }
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.A)
-            {
-                startAnimation();
-            }
-
-            if (e.KeyCode == Keys.C)
-            {
-                resetValues();
-                Invalidate();
-            }
-
-            if (e.KeyCode == Keys.H)
-            {
-                if (e.Shift)
-                {
-                    hue--;
-                } else
-                {
-                    hue++;
-                }
-                hue %= 360;
-
-                cube.hue = hue;
-
-                Invalidate();
-            }
         }
     }
 }
