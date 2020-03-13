@@ -35,7 +35,11 @@ namespace MatrixTransformations
 
             for (int i = 0; i < vb.Count(); i+=2)
             {
-                g.DrawLine(p, vb[i].x, vb[i].y, vb[i+1].x, vb[i+1].y);
+                try
+                {
+                    g.DrawLine(p, vb[i].x, vb[i].y, vb[i + 1].x, vb[i + 1].y);
+                }
+                catch (OverflowException e) { Console.WriteLine(e); }
             }
         }
     }
