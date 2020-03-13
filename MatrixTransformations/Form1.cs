@@ -366,7 +366,6 @@ namespace MatrixTransformations
                     }
                     else
                     {
-                        //ResetValues();
                         phase = 1;
                     }
                     break;
