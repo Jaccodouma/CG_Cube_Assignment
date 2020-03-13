@@ -51,7 +51,7 @@ namespace MatrixTransformations
         Boolean transY = false;
         Boolean transZ = false;
         int phase = 0;
-        int animationSpeed = 50;
+        int animationSpeed = 20;
 
         public Form1()
         {
@@ -99,24 +99,26 @@ namespace MatrixTransformations
             PointF p = new PointF(0,0);
             Color c = cube.colorFromHue(cube.hue);
             string str =
-                "Scale: \t\t" + this.scale + "\t(S/s)\n" +
-                "TranslateX: \t" + this.dx + "\t(Left/Right)\n" +
-                "TranslateY: \t" + this.dy + "\t(Up/Down)\n" +
-                "TranslateZ: \t" + this.dz + "\t(PgUp/PgDn)\n" +
-                "RotateX: \t" + this.rx + "\t(X/x)\n" +
-                "RotateY: \t" + this.ry + "\t(Y/y)\n" +
-                "RotateZ: \t" + this.rz + "\t(Z/z)\n" +
+                "Press A to play/pause animation\n\n" +
 
-                "\nr: \t" + this.r + "\t(R/r)\n" +
-                "d: \t" + this.d + "\t(D/d)\n" +
-                "phi: \t" + this.phi + "\t(P/p)\n" +
-                "theta: \t" + this.theta + "\t(T/t)\n" +
-                "phase: \t" + this.phase + "\n" +
-                "subphase:\t" + this.subPhaseAnimation + "\n" +
-                "speed:\t" + this.animationSpeed + "\t(+/-)\n" +
-                "TransX:\t" + this.transX + "\tNum1\n" +
-                "TransY:\t" + this.transY + "\tNum2\n" +
-                "TransZ:\t" + this.transZ + "\tNum3\n" +
+                "Scale: \t\t" +     Math.Round(this.scale,2)    + "\t(S/s)\n" +
+                "TranslateX: \t" +  Math.Round(this.dx, 2) + "\t(Left/Right)\n" +
+                "TranslateY: \t" +  Math.Round(this.dy, 2) + "\t(Up/Down)\n" +
+                "TranslateZ: \t" +  Math.Round(this.dz, 2) + "\t(PgUp/PgDn)\n" +
+                "RotateX: \t" +     Math.Round(this.rx, 2) + "\t(X/x)\n" +
+                "RotateY: \t" +     Math.Round(this.ry, 2) + "\t(Y/y)\n" +
+                "RotateZ: \t" +     Math.Round(this.rz, 2) + "\t(Z/z)\n" +
+
+                "\nr: \t" +         Math.Round(this.r, 2) + "\t(R/r)\n" +
+                "d: \t" +           Math.Round(this.d, 2) + "\t(D/d)\n" +
+                "phi: \t" +         Math.Round(this.phi, 2) + "\t(P/p)\n" +
+                "theta: \t" +       Math.Round(this.theta, 2) + "\t(T/t)\n" +
+                "phase: \t" +       this.phase + "\n" +
+                "subphase:\t" +     this.subPhaseAnimation + "\n" +
+                "speed:\t" +        this.animationSpeed + "\t(+/-)\n" +
+                "TransX:\t" +       this.transX + "\tNum1\n" +
+                "TransY:\t" +       this.transY + "\tNum2\n" +
+                "TransZ:\t" +       this.transZ + "\tNum3\n" +
 
                 "\nhue: \t" + this.hue + "\t(H/h)\n" +
                 "R:" + c.R + "\t" + "G:" + c.G + "\t" + "B:" + c.B;
@@ -242,7 +244,7 @@ namespace MatrixTransformations
                     }
                     else
                     {
-                        if (this.scale >= 1)
+                        if (this.scale > 1)
                         {
                             this.scale -= 0.01f;
                         }
@@ -343,7 +345,7 @@ namespace MatrixTransformations
                     this.phi++;
                     break;
                 case 4:
-                    if (this.theta > -100 || this.phi != -10 || this.dx != 0 || this.dy != 0 || this.dz != 0)
+                    if (this.theta >= -100 || this.phi != -10 || this.dx != 0 || this.dy != 0 || this.dz != 0)
                     {
                         if (this.theta < -100) this.theta++;
                         if (this.phi > -10) this.phi--;
@@ -356,10 +358,15 @@ namespace MatrixTransformations
 
                         if (this.dz > 0) this.dz -= 0.01f;
                         if (this.dz < 0) this.dz += 0.01f;
+
+                        // Rounding 
+                        this.dx = (float) Math.Round(this.dx, 2);
+                        this.dy = (float) Math.Round(this.dy, 2);
+                        this.dz = (float) Math.Round(this.dz, 2);
                     }
                     else
                     {
-                        ResetValues();
+                        //ResetValues();
                         phase = 1;
                     }
                     break;
@@ -387,7 +394,7 @@ namespace MatrixTransformations
             cube.hue = hue;
             phase = 0;
             subPhaseAnimation = true;
-            animationSpeed = 50;
+            animationSpeed = 20;
             StopAnimation();
         }
         private void Form1_KeyDown(object sender, KeyEventArgs e)
@@ -401,8 +408,8 @@ namespace MatrixTransformations
             if (e.KeyCode == Keys.Y) { if (e.Shift) { this.ry += 1; } else { this.ry -= 1; } Invalidate(); }
             if (e.KeyCode == Keys.Z) { if (e.Shift) { this.rz += 1; } else { this.rz -= 1; } Invalidate(); }
             if (e.KeyCode == Keys.S) { if (e.Shift) { this.scale += (float)0.1; } else { this.scale -= (float)0.1; } Invalidate(); }
-            if (e.KeyCode == Keys.C) { if (e.Shift) { ResetValues(); Invalidate(); } }
-            if (e.KeyCode == Keys.A) { if (e.Shift) { StartAnimation(); } else { StopAnimation(); } }
+            if (e.KeyCode == Keys.C) { ResetValues(); Invalidate(); }
+            if (e.KeyCode == Keys.A) { if (timer == null || !timer.Enabled) { StartAnimation(); } else { StopAnimation(); } }
             if (e.KeyCode == Keys.H) { if (e.Shift) { hue--; } else { hue++; } hue %= 360; cube.hue = hue; Invalidate(); }
 
             if (e.KeyCode == Keys.NumPad1) { this.transX = !this.transX; Invalidate(); }
@@ -415,8 +422,15 @@ namespace MatrixTransformations
             if (e.KeyCode == Keys.Up) { this.dy += 1; Invalidate(); }
             if (e.KeyCode == Keys.PageDown) { this.dz -= 1; Invalidate(); }
             if (e.KeyCode == Keys.PageUp) { this.dz += 1; Invalidate(); }
-            if (e.KeyCode == Keys.Add) { this.animationSpeed -= 1; StopAnimation(); StartAnimation(); Invalidate(); }
-            if (e.KeyCode == Keys.Subtract) { this.animationSpeed += 1; StopAnimation(); StartAnimation(); Invalidate(); }
+            if (e.KeyCode == Keys.Add) { 
+                if (this.animationSpeed > 1) 
+                    this.animationSpeed -= 1;
+                timer.Interval = this.animationSpeed;
+            }
+            if (e.KeyCode == Keys.Subtract) { 
+                this.animationSpeed += 1;
+                timer.Interval = this.animationSpeed;
+            }
 
         }
     }
